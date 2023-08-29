@@ -1,25 +1,10 @@
-require("dotenv").config(); 
-const express = require("express"); // import express
-const morgan = require("morgan"); //import morgan
-const methodOverride = require("method-override");
-const Log = require('./models/Log.js')
-const path = require("path"); 
+const mongoose = require('./connection');
+const Log = require('./Log');
 
-const app = express();
-app.engine('jsx', require('express-react-views').createEngine());
-app.set('view engine', 'jsx')
+const db = mongoose.connection;
 
-
-
-//middleware
-app.use(morgan("tiny")); //logging
-app.use(methodOverride("_method")); // override for put and delete requests from forms
-app.use(express.urlencoded({ extended: true })); // parse urlencoded request bodies
-app.use(express.static("public")); // serve files from public statically
-
-
-app.get("/logs/seed", (req, res) =>{
-    //Array of starter Logs
+db.on('open', () => {
+    // Array of starter Logs
     const starterLogs = [
         {
         title: "Encountered mysterious space anomaly",
@@ -39,38 +24,22 @@ app.get("/logs/seed", (req, res) =>{
         shipIsBroken: false,
         }
     ];
+
     // Delete all logs
     Log.deleteMany({})
         .then(data => {
             Log.create(starterLogs)
                 .then( data => {
                   console.log("Data inserted successfully");
-                  res.status(200).json(data); 
+                    db.close();
                 })
                 .catch(error => {
                   console.error("Error while creating logs:", error);
-                  res.status(400).json(error);  
+                    db.close();
                 });
         })
         .catch(error => {
             console.error("Error while creating logs:",error);
-            res.status(400).json(error);
+            db.close();
         });
 });
-
-  
-
-//routes
-app.get("/", (req, res) => {
-    res.send("your server is running... better catch it.");
-});
-  
-
-app.use('/logs', require('./controllers/logs'))
-
-
-//////////////////////////////////////////////
-// Server Listener 
-//////////////////////////////////////////////
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Now Listening on port ${PORT}`));

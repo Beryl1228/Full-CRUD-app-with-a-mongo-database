@@ -2,12 +2,11 @@
 // Our Models
 ////////////////////////////////////////////////
 // pull schema and model from mongoose using object destructuring
-// const mongoose = require('./connection');
+const mongoose = require('./connection');
 
+const { Schema, model } = mongoose;
 
-const mongoose = require('mongoose');
-
-const logSchema = new mongoose.Schema({
+const logSchema = new Schema({
   title: {
     type: String,
     required: true
@@ -25,6 +24,6 @@ const logSchema = new mongoose.Schema({
   timestamps: true  
 });
 
-const Log = mongoose.model('Log', logSchema);
+const Log = model('Log', logSchema);
 
 module.exports = Log;
